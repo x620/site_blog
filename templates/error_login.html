@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block jumbotron %}
+<div class="alert alert-danger">
+	<h2>Error</h2>
+	<p class="lead">You login or/and password wrong.</p>
+</div>
+<p><a href="{% url 'index' %}">Try again</a></p>
+{% endblock %}

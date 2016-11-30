@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block jumbotron %}
+<div class="jumbotron">
+	<h2>Login</h2>
+	<form action="" method="post">{% csrf_token %}
+		{% for field in login_form %}
+			<div class="form-group">
+				<p class="alert-danger">{{ field.errors }}</p>
+				{{ field }}
+			</div>
+		{% endfor %}
+		<p><button type="submit" class="btn btn-success btn-block" role="button">Sign In</button></p>
+	</form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/jquery/jquery-3.1.1.min.js' %}"></script>
+{% endblock %}
