@@ -2,6 +2,7 @@
 
 from django.conf.urls import url
 from .views import MainView, AccountView, ErrorView, MyBlogView, AddEntryView, AllBlogsView, BlogPageView
+from .views import subscription, unsubscription
 from .views import logout_view
 
 urlpatterns = [
@@ -19,5 +20,8 @@ urlpatterns = [
 	),
 
 	url(r'^account/all_blogs/$', AllBlogsView.as_view(), name='all_blogs'),
+	url(r'^account/subscription/(?P<pk>\d+)/$', subscription, name='subscription'),
+	url(r'^account/unsubscription/(?P<pk>\d+)/$', unsubscription, name='unsubscription'),
 	url(r'^account/blog/(?P<pk>\d+)/$', BlogPageView.as_view(), name='blog_page'),
+
 ]

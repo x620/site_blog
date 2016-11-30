@@ -33,3 +33,11 @@ class Entry(models.Model):
 
 	def __unicode__(self):
 		return '%s (author: %s)' % (self.title, self.blog.user)
+
+
+class Subscription(models.Model):
+	user = models.ForeignKey(User)
+	blog = models.ForeignKey(Blog)
+
+	def __unicode__(self):
+		return 'Subscription: %s' % self.user

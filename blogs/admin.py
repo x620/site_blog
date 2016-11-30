@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 
-from .models import Blog, Entry
+from .models import Blog, Entry, Subscription
 
 
 @admin.register(Blog)
@@ -15,3 +15,9 @@ class BlogAdmin(admin.ModelAdmin):
 class EntryAdmin(admin.ModelAdmin):
 	list_display = ('title', 'body', 'blog', 'pub_date', 'id')
 	search_fields = ('title', 'body')
+
+
+@admin.register(Subscription)
+class EntryAdmin(admin.ModelAdmin):
+	list_display = ('user', 'blog')
+	list_filter = ('user', 'blog')

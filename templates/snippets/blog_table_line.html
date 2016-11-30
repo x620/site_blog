@@ -1,0 +1,11 @@
+<tr>
+	<td width="30%"><a href="{% url 'blog_page' blog.id %}">{{ blog.user }}</a></td>
+	<td>{% if blog.name %}{{ blog.name }}{% endif %}</td>
+	<td width="20%">
+		{% if action == 'subs' %}
+			<a href="{% url 'subscription' blog.id %}" class="btn btn-primary">Subscribe</a>
+		{% else %}
+			<a href="{% url 'unsubscription' blog.id %}" class="btn btn-warning">Unsubscribe</a>
+		{% endif %}
+	</td>
+</tr>

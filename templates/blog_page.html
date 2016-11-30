@@ -13,8 +13,10 @@
 	<div class="container">
 	{% if my_blog %}
 		<p><a href="{% url 'add_entry' %}" class="btn btn-primary">Add entry</a></p>
-		<hr>
+	{% else %}
+		<p><a href="{% url 'all_blogs' %}">All blogs</a></p>
 	{% endif %}
+	<hr>
 	{% if entries_list %}
 		{% for entry in entries_list %}
 			{% if forloop.counter0 > 0 %}<hr>{% endif %}
