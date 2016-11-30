@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block pagename %}Add Entry{% endblock %}
+
+{% block content %}
+	<div class="container">
+		<div class="row">
+			<div class="col-md-4 navigation">
+				{% include 'snippets/navigation.html' %}
+			</div>
+			<div class="col-md-8">
+				<form action="" method="post">{% csrf_token %}
+				{% for field in form %}
+					<div class="form-group">
+						<p class="alert-danger">{{ field.errors }}</p>
+						{{ field }}
+					</div>
+				{% endfor %}
+				<p><button type="submit" class="btn btn-success btn-block" role="button">Publish</button></p>
+			</form>
+			</div>
+		</div>
+	</div>
+{% endblock %}

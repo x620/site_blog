@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block jumbotron %}
+<div class="alert alert-danger">
+	<h2>Add Entry Error</h2>
+	<p class="lead">Entry wasn't created.</p>
+</div>
+<p><a href="{% url 'add_entry' %}">Try again</a></p>
+{% endblock %}

@@ -26,7 +26,10 @@ class Entry(models.Model):
 	blog = models.ForeignKey(Blog)
 	title = models.CharField('Title', max_length=255, blank=True, null=True)
 	body = models.TextField('Entry')
-	pub_date = models.DateField()
+	pub_date = models.DateTimeField(auto_now_add=True)
+
+	class Meta:
+		verbose_name_plural = 'Entries'
 
 	def __unicode__(self):
 		return '%s (author: %s)' % (self.title, self.blog.user)

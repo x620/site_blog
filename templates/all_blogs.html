@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block pagename %}All Blogs{% endblock %}
+
+{% block content %}
+	<div class="container">
+		<div class="row">
+			<div class="col-md-4 navigation">
+				{% include 'snippets/navigation.html' %}
+			</div>
+			<div class="col-md-8">
+				{% for blog in blogs_list %}
+					{% if forloop.counter0 > 0 %}<hr>{% endif %}
+					<p>Blog: <a href="{% url 'blog_page' blog.id %}" class="blog_name">{{ blog.user }}{% if blog.title %} ({{ blog.title }}){% endif %}</a></p>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+{% endblock %}

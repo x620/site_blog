@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block pagename %}
+	{% if my_blog %}
+		My Blog
+	{% else %}
+		{{ blog }}
+	{% endif %}
+{% endblock %}
+
+{% block content %}
+	<div class="container">
+	{% if my_blog %}
+		<p><a href="{% url 'add_entry' %}" class="btn btn-primary">Add entry</a></p>
+		<hr>
+	{% endif %}
+	{% if entries_list %}
+		{% for entry in entries_list %}
+			{% if forloop.counter0 > 0 %}<hr>{% endif %}
+			{% if entry.title %}<h4>{{ entry.title }}</h4>{% endif %}
+			<p><i><small>Date: {{ entry.pub_date }}</small></i></p>
+			<div class="entry_text">
+				<p>{{ entry.body }}</p>
+			</div>
+		{% endfor %}
+	{% else %}
+		<p>No entries in the your blog.</p>
+	{% endif %}
+	</div>
+{% endblock %}

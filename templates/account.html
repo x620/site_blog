@@ -1,13 +1,17 @@
 {% extends 'base.html' %}
 {% load staticfiles %}
 
-{% block jumbotron %}
-	<div class="container">
-		<h1>Welcome in the Room!</h1>
-		<p>User: {{ user }}</p>
-		<p><a href="{% url 'logout' %}">Logout</a></p>
-	</div>
+{% block pagename %}Welcome in the Room!{% endblock %}
 
-	<div id="subscribe">
+{% block content %}
+	<div class="container">
+		<div class="row">
+			<div class="col-md-4 navigation">
+				{% include 'snippets/navigation.html' %}
+			</div>
+			<div class="col-md-8">
+				<h3>Feed</h3>
+			</div>
+		</div>
 	</div>
 {% endblock %}

@@ -29,6 +29,7 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+	<link href="{% static 'css/blog.css' %}" rel="stylesheet">
 	{% block style %}{% endblock %}
 </head>
 
@@ -36,7 +37,16 @@
 
 <div class="container">
 	<div class="header clearfix">
-		<h3 class="text-muted">Blog Test Site</h3>
+		<div class="navbar-right">
+			{% block header_right %}
+				{% if user.is_authenticated %}User: {{ user }}. <a href="{% url 'logout' %}">Logout</a>{% endif %}
+			{% endblock %}
+		</div>
+		<h3 class="text-muted">
+			{% if not main %}<a href="{% url 'account' %}">{% endif %}
+			{% block pagename %}Blog Test Site{% endblock %}
+			{% if not main %}</a>{% endif %}
+		</h3>
 	</div>
 
 	{% block jumbotron %}{% endblock %}
