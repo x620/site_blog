@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 
-from .models import Blog, Entry, Subscription
+from .models import Blog, Entry, Subscription, ReadEntry
 
 
 @admin.register(Blog)
@@ -21,3 +21,9 @@ class EntryAdmin(admin.ModelAdmin):
 class EntryAdmin(admin.ModelAdmin):
 	list_display = ('user', 'blog')
 	list_filter = ('user', 'blog')
+
+
+@admin.register(ReadEntry)
+class ReadEntryAdmin(admin.ModelAdmin):
+	list_display = ('user', 'entry')
+	list_filter = ('user',)

@@ -12,7 +12,7 @@ from django.views.generic import TemplateView, ListView
 from django.views.generic.edit import FormView
 from django.urls import reverse_lazy
 from forms import LoginForm, AddEntryForm
-from .models import Blog, Entry, Subscription
+from .models import Blog, Entry, Subscription, ReadEntry
 
 import logging
 logger = logging.getLogger(__name__)
@@ -46,6 +46,14 @@ def get_entries_from_subscription_blogs(user):
 	for sub in subs:
 		entry_ids += list(sub.blog.entry_set.all().values_list('id', flat=True))
 	return Entry.objects.filter(pk__in=entry_ids).order_by('-pub_date')
+
+
+def get_unread_entries_from_subscription_blogs(user):
+	entries = get_entries_from_subscription_blogs(user)
+	read_entries = ReadEntry.objects.filter(user=user)
+	read_entries_ids = [read_entry.entry_id for read_entry in read_entries]
+	logger.debug('read_entries_ids: %s' % read_entries_ids)
+	return entries.exclude(pk__in=read_entries_ids)
 
 
 # Register and Authorization
@@ -88,7 +96,7 @@ class AccountView(LoginRequiredMixin, TemplateView):
 		context = super(AccountView, self).get_context_data(**kwargs)
 		context['main'] = True
 		context['sub_blogs'] = get_subscriptions(self.request.user)
-		context['sub_entries'] = get_entries_from_subscription_blogs(self.request.user)
+		context['sub_entries'] = get_unread_entries_from_subscription_blogs(self.request.user)
 		return context
 
 
@@ -181,5 +189,7 @@ def unsubscription(request, pk):
 
 def read(request, pk):
 	entry = get_object_or_404(Entry, pk=int(pk))
+	read_entry = ReadEntry(user=request.user, entry=entry)
+	read_entry.save()
 	logger.debug('Entry %s (%s) was read user: %s' % (entry.id, entry.title, request.user))
 	return redirect('account')
