@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
+
+# from django.contrib.auth.models import User
 from __future__ import unicode_literals
 
+from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
 from django.shortcuts import redirect
 from django.views.generic import TemplateView, ListView
 from django.views.generic.edit import FormView
-from django.views.generic.base import RedirectView
 from django.urls import reverse_lazy
 from forms import LoginForm, AddEntryForm
 from .models import Blog, Entry, Subscription
@@ -17,11 +18,45 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def get_subscriptions(user):
+	"""
+	Return subscriptions
+	"""
+	return Subscription.objects.filter(user=user)
+
+
+def all_subscription_blogs(user):
+	"""
+	Return all blogs which user subscription
+	"""
+	return [sub.blog for sub in get_subscriptions(user)]
+
+
+def all_no_subscription_blogs(user):
+	"""
+	Return all blogs which user no subscription
+	"""
+	all_blogs = Blog.objects.exclude(user=user)
+	return [blog for blog in all_blogs if blog not in all_subscription_blogs(user)]
+
+
+def get_entries_from_subscription_blogs(user):
+	subs = get_subscriptions(user)
+	entry_ids = []
+	for sub in subs:
+		entry_ids += list(sub.blog.entry_set.all().values_list('id', flat=True))
+	return Entry.objects.filter(pk__in=entry_ids).order_by('-pub_date')
+
+
 # Register and Authorization
 class MainView(FormView):
 	template_name = 'main.html'
 	form_class = LoginForm
 	success_url = reverse_lazy('account')
+
+	def get(self, request, *args, **kwargs):
+		if request.user.is_authenticated:
+			return redirect('account')
 
 	def form_valid(self, form):
 		if self.request.method == 'POST':
@@ -45,15 +80,6 @@ class MainView(FormView):
 		return context
 
 
-class ErrorView(TemplateView):
-	pass
-
-
-def logout_view(request):
-	logout(request)
-	return redirect('index')
-
-
 class AccountView(LoginRequiredMixin, TemplateView):
 	login_url = reverse_lazy('index')
 	template_name = 'account.html'
@@ -61,6 +87,8 @@ class AccountView(LoginRequiredMixin, TemplateView):
 	def get_context_data(self, **kwargs):
 		context = super(AccountView, self).get_context_data(**kwargs)
 		context['main'] = True
+		context['sub_blogs'] = get_subscriptions(self.request.user)
+		context['sub_entries'] = get_entries_from_subscription_blogs(self.request.user)
 		return context
 
 
@@ -109,15 +137,9 @@ class AllBlogsView(LoginRequiredMixin, ListView):
 	model = Blog
 
 	def get_context_data(self, **kwargs):
-		all_blogs = Blog.objects.exclude(user=self.request.user)
-		subs = Subscription.objects.filter(user=self.request.user)
-
-		unsubs_blog_list = [sub.blog for sub in subs]
-		subs_blog_list = [blog for blog in all_blogs if blog not in unsubs_blog_list]
-
 		context = super(AllBlogsView, self).get_context_data(**kwargs)
-		context['subs_blog_list'] = subs_blog_list
-		context['unsubs_blog_list'] = unsubs_blog_list
+		context['subs_blog_list'] = all_no_subscription_blogs(self.request.user)
+		context['unsubs_blog_list'] = all_subscription_blogs(self.request.user)
 		return context
 
 
@@ -134,19 +156,30 @@ class BlogPageView(LoginRequiredMixin, ListView):
 		return context
 
 
+class ErrorView(TemplateView):
+	pass
+
+
+def logout_view(request):
+	logout(request)
+	return redirect('index')
+
+
 def subscription(request, pk):
 	blog = get_object_or_404(Blog, pk=int(pk))
-	logger.debug('Blog: %s' % blog)
 	new_subscription = Subscription(user=request.user, blog=blog)
 	new_subscription.save()
-	logger.debug('Subscription saved.')
 	return redirect('all_blogs')
 
 
 def unsubscription(request, pk):
 	blog = get_object_or_404(Blog, pk=int(pk))
-	logger.debug('Blog: %s' % blog)
 	subscriptions = Subscription.objects.filter(user=request.user, blog=blog)
 	subscriptions.delete()
-	logger.debug('Subscription removed.')
 	return redirect('all_blogs')
+
+
+def read(request, pk):
+	entry = get_object_or_404(Entry, pk=int(pk))
+	logger.debug('Entry %s (%s) was read user: %s' % (entry.id, entry.title, request.user))
+	return redirect('account')

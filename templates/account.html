@@ -10,7 +10,30 @@
 				{% include 'snippets/navigation.html' %}
 			</div>
 			<div class="col-md-8">
-				<h3>Feed</h3>
+				<h3>My Feed</h3>
+				<hr>
+				{% if sub_entries %}
+					{% for entry in sub_entries %}
+						{% if forloop.counter0 > 0 %}<hr>{% endif %}
+						{% if entry.title %}<h4>{{ entry.title }}</h4>{% endif %}
+						<div class="row">
+							<div class="col-md-9">
+								<p><i><small>
+									Date: {{ entry.pub_date }}.
+									Author: <a href="{% url 'blog_page' entry.blog.id %}">{{ entry.blog.user }}</a>
+								</small></i></p>
+							</div>
+							<div class="col-md-3">
+								<a href="{% url 'read' entry.id %}" class="btn btn-xs btn-default">read</a>
+							</div>
+						</div>
+						<div class="entry_text">
+							<p>{{ entry.body }}</p>
+						</div>
+					{% endfor %}
+				{% else %}
+					<p>You haven't subscription. <a href="{% url 'all_blogs' %}">Please select blogs and subscribe.</a></p>
+				{% endif %}
 			</div>
 		</div>
 	</div>

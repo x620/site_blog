@@ -40,4 +40,4 @@ class Subscription(models.Model):
 	blog = models.ForeignKey(Blog)
 
 	def __unicode__(self):
-		return 'Subscription: %s' % self.user
+		return 'Subscription: %s' % self.blog.user
