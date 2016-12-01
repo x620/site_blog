@@ -15,6 +15,8 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+DOMAIN = '127.0.0.1:8000'
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
@@ -161,4 +163,19 @@ LOGGING = {
 		},
 	},
 }
+
+##############################################################################
+# Email Sending Settings
+##############################################################################
+with open(os.path.join(BASE_DIR, '..', 'pswd.txt')) as f:
+	SMTP_PASS = f.read()
+
+EMAIL_HOST = 'smtp.yandex.ru'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'x620@yandex.ru'
+EMAIL_HOST_PASSWORD = SMTP_PASS
+EMAIL_USE_SSL = True
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+SERVER_EMAIL = EMAIL_HOST_USER
+
 ##############################################################################

@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
-# from django.contrib.auth.models import User
 from __future__ import unicode_literals
 
-from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -12,7 +10,7 @@ from django.views.generic import TemplateView, ListView
 from django.views.generic.edit import FormView
 from django.urls import reverse_lazy
 from forms import LoginForm, AddEntryForm
-from .models import Blog, Entry, Subscription, ReadEntry
+from .models import Blog, Entry, Subscription, ReadEntry, notification_for_subscriber
 
 import logging
 logger = logging.getLogger(__name__)
@@ -41,6 +39,9 @@ def all_no_subscription_blogs(user):
 
 
 def get_entries_from_subscription_blogs(user):
+	"""
+	Return queryset entries in the subscription blogs
+	"""
 	subs = get_subscriptions(user)
 	entry_ids = []
 	for sub in subs:
@@ -49,14 +50,15 @@ def get_entries_from_subscription_blogs(user):
 
 
 def get_unread_entries_from_subscription_blogs(user):
+	"""
+	Return queryset entries in the subscription blogs without read entries
+	"""
 	entries = get_entries_from_subscription_blogs(user)
 	read_entries = ReadEntry.objects.filter(user=user)
 	read_entries_ids = [read_entry.entry_id for read_entry in read_entries]
-	logger.debug('read_entries_ids: %s' % read_entries_ids)
 	return entries.exclude(pk__in=read_entries_ids)
 
 
-# Register and Authorization
 class MainView(FormView):
 	template_name = 'main.html'
 	form_class = LoginForm
@@ -65,19 +67,18 @@ class MainView(FormView):
 	def get(self, request, *args, **kwargs):
 		if request.user.is_authenticated:
 			return redirect('account')
+		return super(MainView, self).get(request, *args, **kwargs)
 
 	def form_valid(self, form):
 		if self.request.method == 'POST':
 			send_form = LoginForm(self.request.POST)
 			if send_form.is_valid():
-				# Получение данных из формы
 				username = send_form.cleaned_data['username']
 				password = send_form.cleaned_data['password']
 
 				user = authenticate(username=username, password=password)
 				if user is not None:
 					login(self.request, user)
-					# Редирект на страницу "Аккаунт"
 					return super(MainView, self).form_valid(form)
 			return redirect('login_error')
 
@@ -124,12 +125,13 @@ class AddEntryView(LoginRequiredMixin, FormView):
 			if add_entry_form.is_valid():
 				title = add_entry_form.cleaned_data['title']
 				body = add_entry_form.cleaned_data['body']
-
+				# Save entry in DB
 				blog = Blog.objects.get(user=self.request.user)
 				entry = Entry(blog=blog, body=body)
 				entry.title = title
 				entry.save()
-
+				# Send email notification to subscribers
+				notification_for_subscriber(blog)
 				return super(AddEntryView, self).form_valid(form)
 			else:
 				return redirect('add_entry_error')
@@ -183,6 +185,11 @@ def subscription(request, pk):
 def unsubscription(request, pk):
 	blog = get_object_or_404(Blog, pk=int(pk))
 	subscriptions = Subscription.objects.filter(user=request.user, blog=blog)
+
+	# Remove info about read entries in the unsubscribe blog
+	for sub in subscriptions:
+		ReadEntry.objects.filter(user=request.user, entry__blog=sub.blog).delete()
+
 	subscriptions.delete()
 	return redirect('all_blogs')
 

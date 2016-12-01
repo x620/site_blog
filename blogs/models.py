@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+
+from django.core.mail import send_mail
 from django.db import models
-from django.contrib.auth.models import User
 from django.db.models.signals import post_save
+from django.contrib.auth.models import User
 from django.dispatch import receiver
+from django.urls import reverse
 
-
-@receiver(post_save, sender=User)
-def create_user_blog(sender, instance, created, **kwargs):
-	if created and not instance.is_staff:
-		blog = Blog(user=instance)
-		blog.save()
+from site_blog.settings import DOMAIN, DEFAULT_FROM_EMAIL
 
 
 class Blog(models.Model):
@@ -48,4 +46,36 @@ class ReadEntry(models.Model):
 	entry = models.ForeignKey(Entry)
 
 	def __unicode__(self):
-		return 'Entry: %s (blog user: %s)' % (self.entry, self.entry.blog.user)
+		return '%s' % self.entry
+
+
+@receiver(post_save, sender=User)
+def create_user_blog(sender, instance, created, **kwargs):
+	if created and not instance.is_staff:
+		blog = Blog(user=instance)
+		blog.save()
+
+
+@receiver(post_save, sender=Entry)
+def create_entry(sender, instance, created, **kwargs):
+	if created:
+		notification_for_subscriber(instance.blog)
+
+
+def notification_for_subscriber(blog):
+	"""
+	Sending email notification for subscribers
+	"""
+	subscribers = Subscription.objects.filter(blog=blog)
+	if subscribers.exists():
+		recipients = [sub.user.email for sub in subscribers if sub.user.email]
+		if recipients:
+			sbj = 'New post in the your subscriptions'
+			message = '''
+Hi.
+You subscribed on the blog %s.
+This blog publish new post.
+Go to the blog that see it: http://%s%s
+''' % (blog, DOMAIN, reverse('account'))
+			# logger.debug('Send notifications. Recipients: %s' % recipients)
+			send_mail(sbj, message, DEFAULT_FROM_EMAIL, recipients)

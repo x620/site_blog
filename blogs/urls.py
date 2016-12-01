@@ -24,5 +24,4 @@ urlpatterns = [
 	url(r'^account/unsubscription/(?P<pk>\d+)/$', unsubscription, name='unsubscription'),
 	url(r'^account/read/(?P<pk>\d+)/$', read, name='read'),
 	url(r'^account/blog/(?P<pk>\d+)/$', BlogPageView.as_view(), name='blog_page'),
-
 ]
